@@ -6,19 +6,19 @@ tags-testing-temp
 
 ## Use cases:
 
-1. Chromium branch point
+1. Chromium branch point:
 Next script's run will handle it, based on Omaha feed
 
-2. Chrome released to channel
+2. Chrome released to channel:
 Next script's run will handle it, based on Omaha feed
 
-3. Samples changed on trunk
+3. Samples changed on trunk:
 Pull request accepted, no problem
 
-4. Special cases: Samples changed on M?? branches
+4. Special cases: Samples changed on M?? branches:
 Pull request only accepted if it is blocking or very important and branch-specific change. No upstream/merge of changes, never. Script should handle moving the channel tag to the tip of the corresponding branch (step 7 on the script workflow below)
 
-5. Special cases: User branches from a tag, but tag is moved when user submits pull request
+5. Special cases: User branches from a tag, but tag is moved when user submits pull request:
 Needs testing. Ideally, PRs, even if the branch was created from a tag, would go either to the appropriate branch (if it is a bug fix specifically on that branch) or to trunk. 
 
 6. Special cases: User branched from a branch that were removed. What happens? Needs testing.
@@ -37,15 +37,15 @@ We need to be clear that user branches must only be created from trunk.
 7. make sure each tag (channel) points to the tip of the corresponding branch, so the tag will always point to the newest branch commits
 
 Tags can be linked directly:
- https://github.com/GoogleChrome/chrome-app-samples/tree/stable
- https://github.com/GoogleChrome/chrome-app-samples/tree/beta
- https://github.com/GoogleChrome/chrome-app-samples/tree/dev
+* https://github.com/GoogleChrome/chrome-app-samples/tree/stable
+* https://github.com/GoogleChrome/chrome-app-samples/tree/beta
+* https://github.com/GoogleChrome/chrome-app-samples/tree/dev
 
 and the corresponding inner links:
- https://github.com/GoogleChrome/chrome-app-samples/tree/dev/helloworld
+* https://github.com/GoogleChrome/chrome-app-samples/tree/dev/helloworld
 
 Also, GitHub automatically creates a link to a ZIP of a tag, allowing directly download links for each channel:
- https://github.com/GoogleChrome/chrome-app-samples/zipball/stable
- https://github.com/GoogleChrome/chrome-app-samples/zipball/beta
- https://github.com/GoogleChrome/chrome-app-samples/zipball/dev
+* https://github.com/GoogleChrome/chrome-app-samples/zipball/stable
+* https://github.com/GoogleChrome/chrome-app-samples/zipball/beta
+* https://github.com/GoogleChrome/chrome-app-samples/zipball/dev
 
