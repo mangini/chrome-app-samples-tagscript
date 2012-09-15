@@ -8,7 +8,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
-DRYRUN=True
 DEBUG=True
 
 ACCOUNT="GoogleChrome"
@@ -51,11 +50,12 @@ def get_omaha_versions():
 
 
 class GitWrapper():
-	def __init__(self, path, projectname):
+	def __init__(self, path, projectname, dryrun):
 		self.path=path
 		self.projectname=projectname
 		self.changes=[]
 		self.errors=[]
+		self.dryrun=dryrun
 
 	def execute(self, cmd, execpath=''):
 		_debug("Executing: "+cmd)
@@ -148,12 +148,12 @@ class GitWrapper():
 		_debug("** Moving branch "+channel_branch+" to commit "+commit)
 		message='"moving channel '+channel_branch+' to version '+ version+'"'
 		cmd='git update-ref -m '+message+' refs/heads/'+channel_branch+' '+commit
-		if DRYRUN: cmd="echo FAKE RUN: %s" % cmd
+		if self.dryrun: cmd="echo FAKE RUN: %s" % cmd
 		self.execute(cmd)
 
 	def push(self):
 		cmd='git push -f'
-		if DRYRUN: cmd="echo FAKE RUN: %s" % cmd
+		if self.dryrun: cmd="echo FAKE RUN: %s" % cmd
 		self.execute(cmd)
 
 	def pull(self):
@@ -161,18 +161,18 @@ class GitWrapper():
 	    
 	def remove_branch(self, branch_name):
 		cmd='git branch -D -r origin/%s' % branch_name
-		if DRYRUN: cmd="echo FAKE RUN: %s" % cmd
+		if self.dryrun: cmd="echo FAKE RUN: %s" % cmd
 		self.execute(cmd)
 		cmd='git push origin :%s' % branch_name
-		if DRYRUN: cmd="echo FAKE RUN: %s" % cmd
+		if self.dryrun: cmd="echo FAKE RUN: %s" % cmd
 		result=self.execute(cmd)
 	    
 	def create_branch(self, branch_name):
 		cmd='git branch %s' % branch_name
-		if DRYRUN: cmd="echo FAKE RUN: %s" % cmd
+		if self.dryrun: cmd="echo FAKE RUN: %s" % cmd
 		self.execute(cmd)
 		cmd='git push origin %s' % branch_name
-		if DRYRUN: cmd="echo FAKE RUN: %s" % cmd
+		if self.dryrun: cmd="echo FAKE RUN: %s" % cmd
 		result=self.execute(cmd)
 
 
@@ -213,8 +213,16 @@ def main(argv=None):
 		print "Invalid arguments. Syntax: process.py <from_email> <to_email> [--not-dryrun]"
 		return(1)
 
+	dryrun=True
 	if len(argv)>2 and argv[2]=='--not-dryrun':
-		DRYRUN=False
+		dryrun=False
+		print "LIVE RUNNING, this is not dry-run!"
+	elif len(argv)==2:
+		print "DRY-RUN, no changes will be saved"
+	else:
+		print "Invalid argument: %s" % argv[2]
+		return(1)
+
 
 	fromEmail=argv[0]
 	toEmail=argv[1]
@@ -225,7 +233,7 @@ def main(argv=None):
 
 	try:
 		_debug("created %s" % temppath)
-		git=GitWrapper(temppath, PROJECT_NAME)
+		git=GitWrapper(temppath, PROJECT_NAME, dryrun)
 		
 		if not validOmaha:
 			msg="Invalid Omaha content, versions missing: %s" % json.dumps(versions)
