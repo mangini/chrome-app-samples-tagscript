@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 
 DEBUG=True
 FROM_EMAIL="mangini@chromium.org"
-TO_EMAIL=["mangini@google.com"]
+TO_EMAIL="mangini@google.com"
 
 #ACCOUNT="GoogleChrome"
 #PROJECT_NAME="chrome-app-samples"
@@ -175,6 +175,8 @@ def sendEmail(content, attachment):
 	msg['To'] = TO_EMAIL
 	msg.preamble = content
 
+	msg.attach(MIMEText(content, 'plain'))
+
 	attach=MIMEText(attachment, 'plain')
 	filename='log_%s.txt' % today
 	attach.add_header('Content-Disposition', 'attachment', filename=filename)
@@ -219,7 +221,7 @@ def main(argv=None):
 		_debug("removed %s" % temppath)
 
 	if len(git.errors)>0 or len(git.changes)>0:
-		s='Branches of chrome-app-samples changed accordingly to Chrome versions. Verbose report attached, summary below:\n\n'
+		s='Branches of chrome-app-samples changed accordingly to Chrome versions. Verbose report attached, summary below:\n'
 		s+=printCollection("Errors:", git.errors)
 		s+="\n"
 		s+=printCollection("Changes:", git.changes)
