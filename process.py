@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 
 DEBUG=True
 FROM_EMAIL="mangini@chromium.org"
-TO_EMAIL="mangini@google.com"
+TO_EMAIL=["mangini@google.com"]
 
 #ACCOUNT="GoogleChrome"
 #PROJECT_NAME="chrome-app-samples"
