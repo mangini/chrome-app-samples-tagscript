@@ -8,14 +8,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
+DRYRUN=True
 DEBUG=True
-FROM_EMAIL="mangini@chromium.org"
-TO_EMAIL="mangini@google.com"
 
-#ACCOUNT="GoogleChrome"
-#PROJECT_NAME="chrome-app-samples"
-ACCOUNT="mangini"
-PROJECT_NAME="mangini-test"
+ACCOUNT="GoogleChrome"
+PROJECT_NAME="chrome-app-samples"
 GIT_HOME="https://github.com/%s/%s.git" % (ACCOUNT, PROJECT_NAME)
 BASE_URL="https://github.com/%s/%s" % (ACCOUNT, PROJECT_NAME)
 
@@ -134,9 +131,9 @@ class GitWrapper():
 			tip_commit_channel=self.get_tip_of_branch(channel_branch)
 			tip_commit_version=self.get_tip_of_branch(version_branch)
 			if tip_commit_channel!=tip_commit_version:
-				_debug("** Needs to change channel branch "+channel_branch+" from "+tip_commit_channel+" to "+tip_commit_version)
+				_debug("** Needs to change channel branch %s from %s to %s" % (channel_branch, tip_commit_channel, tip_commit_version))
 				self.changes.append('[branch_move] Changed branch %s from commit %s to commit %s (version %s)' 
-					% ( self.get_branch_url(channel_branch)), tip_commit_channel, tip_commit_version, self.get_branch_url(version_branch) )
+					% ( self.get_branch_url(channel_branch), tip_commit_channel, tip_commit_version, self.get_branch_url(version_branch) ))
 				changed=True
 				self.update_branch_ref(channel_branch, tip_commit_version, version)
 
@@ -150,29 +147,41 @@ class GitWrapper():
 	def update_branch_ref(self, channel_branch, commit, version):
 		_debug("** Moving branch "+channel_branch+" to commit "+commit)
 		message='"moving channel '+channel_branch+' to version '+ version+'"'
-		self.execute('git update-ref -m '+message+' refs/heads/'+channel_branch+' '+commit)
+		cmd='git update-ref -m '+message+' refs/heads/'+channel_branch+' '+commit
+		if DRYRUN: cmd="echo FAKE RUN: %s" % cmd
+		self.execute(cmd)
 
 	def push(self):
-		self.execute('git push -f')
+		cmd='git push -f'
+		if DRYRUN: cmd="echo FAKE RUN: %s" % cmd
+		self.execute(cmd)
 
 	def pull(self):
 		self.execute('git pull')
 	    
 	def remove_branch(self, branch_name):
-		self.execute('git branch -D -r origin/%s' % branch_name)
-		result=self.execute('git push origin :%s' % branch_name)
+		cmd='git branch -D -r origin/%s' % branch_name
+		if DRYRUN: cmd="echo FAKE RUN: %s" % cmd
+		self.execute(cmd)
+		cmd='git push origin :%s' % branch_name
+		if DRYRUN: cmd="echo FAKE RUN: %s" % cmd
+		result=self.execute(cmd)
 	    
 	def create_branch(self, branch_name):
-		self.execute('git branch %s' % branch_name)
-		result=self.execute('git push origin %s' % branch_name)
+		cmd='git branch %s' % branch_name
+		if DRYRUN: cmd="echo FAKE RUN: %s" % cmd
+		self.execute(cmd)
+		cmd='git push origin %s' % branch_name
+		if DRYRUN: cmd="echo FAKE RUN: %s" % cmd
+		result=self.execute(cmd)
 
 
-def sendEmail(content, attachment):
+def sendEmail(content, attachment, fromEmail, toEmail):
 	msg = MIMEMultipart()
 	today=str(datetime.date.today())
 	msg['Subject'] = '[apps-samples] chrome-app-samples branching notification - %s' % today
-	msg['From'] = FROM_EMAIL
-	msg['To'] = TO_EMAIL
+	msg['From'] = fromEmail
+	msg['To'] = toEmail
 	msg.preamble = content
 
 	msg.attach(MIMEText(content, 'plain'))
@@ -183,7 +192,7 @@ def sendEmail(content, attachment):
 	msg.attach(attach)
 	try:
 		s = smtplib.SMTP('localhost')
-		s.sendmail(FROM_EMAIL, TO_EMAIL, msg.as_string())
+		s.sendmail(fromEmail, toEmail, msg.as_string())
 		s.quit()
 	except:
 		print "ERROR: could not send email: ", sys.exc_info()
@@ -199,6 +208,13 @@ def printCollection(title, col):
 
 
 def main(argv=None):
+
+	if len(argv)<2:
+		print "Invalid arguments. Syntax: process.py <from_email> <to_email>"
+		return(1)
+
+	fromEmail=argv[0]
+	toEmail=argv[1]
 	versions=get_omaha_versions()
 	validOmaha='stable' in versions and 'dev' in versions and 'beta' in versions
 
@@ -221,12 +237,12 @@ def main(argv=None):
 		_debug("removed %s" % temppath)
 
 	if len(git.errors)>0 or len(git.changes)>0:
-		s='Branches of chrome-app-samples changed accordingly to Chrome versions. Verbose report attached, summary below:\n'
+		s='Branches of chrome-app-samples changed based on Chrome versions. Verbose report attached, summary below:\n'
 		s+=printCollection("Errors:", git.errors)
 		s+="\n"
 		s+=printCollection("Changes:", git.changes)
 		s+='\n(script run at %s)\n' % str(datetime.datetime.now())
-		sendEmail(s, DEBUGFILE.getvalue())
+		sendEmail(s, DEBUGFILE.getvalue(), fromEmail, toEmail)
 	else:
 		if DEBUG: print "Nothing changed"
 
@@ -234,5 +250,5 @@ def main(argv=None):
 		return(1)
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))
 
