@@ -19,7 +19,7 @@ PROJECT_NAME="mangini-test"
 GIT_HOME="https://github.com/%s/%s.git" % (ACCOUNT, PROJECT_NAME)
 BASE_URL="https://github.com/%s/%s" % (ACCOUNT, PROJECT_NAME)
 
-OMAHA_URL='http://omahaproxy.appspcot.com/all.json'
+OMAHA_URL='http://omahaproxy.appspot.com/all.json'
 
 
 DEBUGFILE=StringIO.StringIO()
@@ -169,12 +169,16 @@ class GitWrapper():
 
 def sendEmail(content, attachment):
 	msg = MIMEMultipart()
-	msg['Subject'] = '%s chrome-app-samples branching notification' % str(datetime.date.today())
+	today=str(datetime.date.today())
+	msg['Subject'] = '[apps-samples] chrome-app-samples branching notification - %s' % today
 	msg['From'] = FROM_EMAIL
 	msg['To'] = TO_EMAIL
 	msg.preamble = content
 
-	msg.attach(MIMEText(attachment, 'text'))
+	attach=MIMEText(attachment, 'plain')
+	filename='log_%s.txt' % today
+	attach.add_header('Content-Disposition', 'attachment', filename=filename)
+	msg.attach(attach)
 	try:
 		s = smtplib.SMTP('localhost')
 		s.sendmail(FROM_EMAIL, TO_EMAIL, msg.as_string())
