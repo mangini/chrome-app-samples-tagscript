@@ -12,37 +12,35 @@ Next script's run will handle it, based on Omaha feed
 3. Samples changed on trunk:
 Pull request accepted, no problem
 
-4. Special cases: Samples changed on M?? branches:
-Pull request only accepted if it is blocking or very important and branch-specific change. No upstream/merge of changes, never. Script should handle moving the channel tag to the tip of the corresponding branch (step 7 on the script workflow below)
+4. Special cases: Samples changed on \_\_M?? branches:
+Pull request only accepted if it is blocking or very important and branch-specific change. No upstream/merge of changes, never. Script should handle moving the channel branch to the tip of the corresponding version branch (step 7 in the script workflow below)
 
-5. Special cases: User branches from a tag, but tag is moved when user submits pull request:
-Needs testing. Ideally, PRs, even if the branch was created from a tag, would go either to the appropriate branch (if it is a bug fix specifically on that branch) or to trunk. 
+5. Special cases: User branches from a channel branch, but branch has moved its ref when user submits pull request:
+Needs testing. Ideally, PRs from a user branch would go either to the corresponding version branch (if it is a bug fix specifically for that branch) or to trunk. 
 
-6. Special cases: User branched from a branch that were removed. What happens? Needs testing.
+6. Special cases: User branched from a version branch that were removed. What happens? Needs testing.
 
-We need to be clear that user branches must only be created from trunk.
+We need to clearly communicate that user branches should almost always be created from trunk.
 
 
 ## Script workflow:
 
-1. Get Omaha info for a base platform (win?) from http://omahaproxy.appspot.com/all.json. For every channel (dev, beta, stable), get the first digits of version field (eg stable='23')
-2. clone remote repository locally
-3. run 'git tag -n' to get tags and their annotations (one for each channel - name of corresponding branch is in the annotation)
-4. run 'git branch -r' to get branches (one for each active M?? version)
-5. if there are versions in Omaha with no corresponding branch, create it from trunk. If there are branches without corresponding Omaha versions, remove the branch.
-6. if the current tag->annotation (eg, tag 'stable' is annotated as 'M20') doesn't correspond to the Omaha mapping got on step 1, move the tag to the tip of the branch associated with the version in Omaha (M21, for example) and update the tag's annotation
-7. make sure each tag (channel) points to the tip of the corresponding branch, so the tag will always point to the newest branch commits
+1. [done] Get Omaha info for a base platform (win?) from http://omahaproxy.appspot.com/all.json. For every channel (dev, beta, stable), get the first digits of version field (eg stable='23')
+2. [done] clone remote repository locally
+3. [done] run 'git branch -l -r' to get branches. Filter \_\_M\d+ as version branches and \_\[^\d\] as channel branches
+4. [done] if there are versions in Omaha with no corresponding branch, create them from trunk. If there are branches without corresponding Omaha versions, remove the branch. Same for channels, although that should happen only at the first time.
+5. if the current tip of channel branch doesn't correspond to the tip of version branch (eg, branch '\_stable' points to a commit different than '\_\_M21', and supposing that Omaha said that stable is M21 now), update the ref of the channel branch to the tip of the version branch 
 
-Tags can be linked directly:
-* https://github.com/GoogleChrome/chrome-app-samples/tree/stable
-* https://github.com/GoogleChrome/chrome-app-samples/tree/beta
-* https://github.com/GoogleChrome/chrome-app-samples/tree/dev
+Branches can be linked directly:
+* https://github.com/GoogleChrome/chrome-app-samples/tree/\_stable
+* https://github.com/GoogleChrome/chrome-app-samples/tree/\_beta
+* https://github.com/GoogleChrome/chrome-app-samples/tree/\_dev
 
 and the corresponding inner links:
-* https://github.com/GoogleChrome/chrome-app-samples/tree/dev/helloworld
+* https://github.com/GoogleChrome/chrome-app-samples/tree/\_dev/helloworld
 
-Also, GitHub automatically creates a link to a ZIP of a tag, allowing directly download links for each channel:
-* https://github.com/GoogleChrome/chrome-app-samples/zipball/stable
-* https://github.com/GoogleChrome/chrome-app-samples/zipball/beta
-* https://github.com/GoogleChrome/chrome-app-samples/zipball/dev
+Also, GitHub automatically creates a link to a ZIP of a branch, allowing directly download links for each channel:
+* https://github.com/GoogleChrome/chrome-app-samples/zipball/\_stable
+* https://github.com/GoogleChrome/chrome-app-samples/zipball/\_beta
+* https://github.com/GoogleChrome/chrome-app-samples/zipball/\_dev
 
