@@ -210,8 +210,11 @@ def printCollection(title, col):
 def main(argv=None):
 
 	if len(argv)<2:
-		print "Invalid arguments. Syntax: process.py <from_email> <to_email>"
+		print "Invalid arguments. Syntax: process.py <from_email> <to_email> [--not-dryrun]"
 		return(1)
+
+	if len(argv)>2 and argv[2]=='--not-dryrun':
+		DRYRUN=False
 
 	fromEmail=argv[0]
 	toEmail=argv[1]
